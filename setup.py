@@ -1,15 +1,14 @@
 from pathlib import Path
 from setuptools import setup, find_packages
+from floop.main import __version__ as version
 
-this_directory = Path(__file__).parent
-long_description = (this_directory / "README.md").read_text()
-version = (this_directory / "VERSION").read_text()
+
+long_description = (Path(__file__).parent / "README.md").read_text()
+
 
 setup(
-    name='panther_okta',
-    url="https://panther.com",
-    author="Panther Labs Inc.",
-    author_email="support@panther.io",
+    name='floop',
+    author="Max Richmond",
     version=version,
     packages=find_packages(),
     python_requires=">=3.9",

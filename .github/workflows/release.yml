@@ -1,9 +1,12 @@
-name: Release max_richmond_publish_python_package_example
+name: "GitHub Workflow for Merging into Master and Releasing to PyPi"
 
 on:
   push:
     branches:
       - "master"
+    tags:
+      - "v*.*.*"
+      - "release"
 
 jobs:
   release:
@@ -32,20 +35,23 @@ jobs:
     - name: Test package works
       run: |
         pipenv run pip install dist/*.tar.gz
-        pipenv run max_richmond_publish_python_package_example --version
-        make test
+        make ci_run
 
-    - name: Publish to pypi
-      run: pipenv run twine upload dist/*.tar.gz -u panther -p {{ secrets.PYPI_PASSWORD }} --non-interactive
+    # - name: Publish to pypi
+    #   run: pipenv run twine upload dist/*.tar.gz -u panther -p {{ secrets.PYPI_PASSWORD }} --non-interactive
 
-    - name: Publish distribution 📦 to Test PyPI
+    - name: Publish to Test PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
-        skip_existing: true
         password: ${{ secrets.TEST_PYPI_API_TOKEN }}
         repository_url: https://test.pypi.org/legacy/
 
-    - name: Publish distribution 📦 to PyPI
+    - name: New Github release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: 
+
+    - name: Publish to PyPI
       if: startsWith(github.ref, 'refs/tags')
       uses: pypa/gh-action-pypi-publish@release/v1
       with:

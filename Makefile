@@ -1,27 +1,22 @@
-# Targets for local development
-shell::   pipenv shell
-install:: ci_install
-fmt::     ci_fmt
-lint::    fmt ci_lint
-test::    fmt ci_lint ci_test
+fmt::
+	pipenv run black floop tests
+	pipenv run isort .
+	pipenv run flake8 .
 
-.SILENT: git_reset
+lint::
+	pipenv run mypy --config-file mypy.ini floop tests
 
-# Targets for CI
-ci_fmt::
-	pipenv run black max_richmond_publish_python_package_example tests
+test::
+	pipenv run nosetests -v --with-coverage --cover-package=floop
 
-ci_lint::
-	pipenv run mypy --config-file mypy.ini max_richmond_publish_python_package_example tests
-
-ci_test::
-	pipenv run nosetests -v --with-coverage --cover-package=max_richmond_publish_python_package_example
-
-ci_install:
+install:
 	pipenv install --dev
 
+run:
+	pipenv run bin/floop
+
 # Other targets
-publish:
-	rm -rf dist
-	pipenv run python3 setup.py sdist
-	pipenv run twine upload ./dist/max_richmond_publish_python_package_example-*.tar.gz
+# publish:
+# 	rm -rf dist
+# 	pipenv run python3 setup.py sdist
+# 	pipenv run twine upload ./dist/floop-*.tar.gz
