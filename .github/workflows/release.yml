@@ -1,0 +1,58 @@
+name: "GitHub Workflow for Merging into Master and Releasing to PyPi"
+
+on:
+  push:
+    branches:
+      - "master"
+    tags:
+      - "v*.*.*"
+      - "release"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@master
+
+    - name: Set up Python 
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.9"
+
+    - name: Install pipenv
+      run: pip install pipenv
+
+    - name: Install Core Utilities
+      run: make install
+
+    - name: Clean old release (if any)
+      run: rm -rf dist
+
+    - name: Build release package
+      run: pipenv run python3 setup.py sdist
+
+    - name: Test package works
+      run: |
+        pipenv run pip install dist/*.tar.gz
+        make ci_run
+
+    # - name: Publish to pypi
+    #   run: pipenv run twine upload dist/*.tar.gz -u panther -p {{ secrets.PYPI_PASSWORD }} --non-interactive
+
+    - name: Publish to Test PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+        repository_url: https://test.pypi.org/legacy/
+
+    - name: New Github release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: 
+
+    - name: Publish to PyPI
+      if: startsWith(github.ref, 'refs/tags')
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        password: ${{ secrets.PYPI_API_TOKEN }}
